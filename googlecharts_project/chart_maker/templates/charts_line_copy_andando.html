@@ -1,0 +1,196 @@
+<html>
+  <head>
+    <h1>Densitograma</h1>
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+function trabaja_min() {
+        //alert("Activaste la funcion miFuncion()")
+        data.removeColumn(2);
+        }
+      
+      // Load the Visualization API and the corechart package.
+      google.charts.load('current', {'packages':['corechart']});
+      
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.charts.setOnLoadCallback(drawChart);
+
+      // Callback that creates and populates a data table,
+      // instantiates the pie chart, passes in the data and
+      // draws it.
+      
+
+      function drawChart() {
+        
+
+        //var dataaux = google.visualization.arrayToDataTable({{values|safe}});  
+        //var data = new google.visualization.DataTable({{values|safe}});
+        var data = new google.visualization.DataTable();
+        
+        data.addColumn('number', 'Y');
+        data.addColumn('number', 'X');
+        data.addColumn('number', 'min1');
+        data.addColumn('number', 'min2');
+        data.addColumn('number', 'min3');
+        data.addColumn('number', 'min4');
+
+        datos_graf =  {{values|safe}};
+        console.log('datos iniciales')
+        console.log(datos_graf);
+        
+        for (let i = 1; i < datos_graf.length; i++) {
+            console.log(`Numero: ${i}`);
+            console.log('Entrada: '+datos_graf[i]); //no patea
+            dato_graf_lin=datos_graf[i]
+            //data.addRows([dato_graf_lin]); //estoy metiendo datos con -1
+            for (let j = 0; j < 6; j++) {
+              console.log('ciclo interno: '+dato_graf_lin[j]);
+              
+              if (dato_graf_lin[j] == -1){
+                dato_graf_lin[j] = null
+              }
+            }
+            data.addRows([dato_graf_lin]);
+            console.log('salida: ' + dato_graf_lin);
+          
+            //data.addRows([dato_graf_lin]); falla por error de null
+        }
+        //agregados de minimos
+        //obtengo los minimos recibidos
+        datos_graf_minimos =  {{values_min|safe}};
+        console.log('datos_graf_minimos');
+        console.log(datos_graf_minimos);
+       
+        
+        for (let i = 1; i < datos_graf_minimos.length; i++) {
+            console.log(`Numero: ${i}`);
+            console.log('Entrada: '+datos_graf_minimos[i]); //no patea
+            datos_graf_minimos_lin=datos_graf_minimos[i]
+            //data.addRows([dato_graf_lin]); //estoy metiendo datos con -1
+            for (let j = 0; j < 6; j++) {
+              console.log('ciclo interno: '+datos_graf_minimos[j]);
+              
+              if (datos_graf_minimos_lin[j] == -1){
+                datos_graf_minimos_lin[j] = null
+              }
+            }
+            //data.addRows([datos_graf_minimos_lin]);
+            console.log('salida: ' + datos_graf_minimos_lin);
+        }
+
+        console.log('datos_graf_minimos Salida');
+        console.log(datos_graf_minimos);
+        //agrego cada minimo
+        valor_x=datos_graf_minimos[1][0]
+        console.log(valor_x)
+        data.addRows([[valor_x, null, 0, null, null, null], datos_graf_minimos[1]])
+        //data.addRows([[3, null, 0, null, null, null], [3, null, 17, null, null, null]])
+
+        valor_x=datos_graf_minimos[2][0]
+        console.log(valor_x)
+        data.addRows([[valor_x, null, null, 0, null, null], datos_graf_minimos[2]])
+        
+        valor_x=datos_graf_minimos[3][0]
+        console.log(valor_x)
+        data.addRows([[valor_x, null, null, null, 0,  null], datos_graf_minimos[3]])
+
+        valor_x=datos_graf_minimos[4][0]
+        console.log(valor_x)
+        data.addRows([[valor_x, null, null, null, null,0],  datos_graf_minimos[4]])
+        
+        
+        
+        var options = {
+            title: 'Densitograma paciente x1',
+            curveType: 'function',
+            legend: { position: 'bottom' }
+          };
+
+        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+        chart.draw(data, options);
+
+        //para los eventos
+        // Create our table.
+        //var table = new google.visualization.Table(document.getElementById('table_div'));
+        //table.draw(data, options);
+        
+    /*    
+        //con esta seccion puedo mostrar los datos del punto al pincharlo
+        // Add our selection handler.
+        google.visualization.events.addListener(chart, 'select', selectHandler);
+
+        
+        // The selection handler.
+        // Loop through all items in the selection and concatenate
+        // a single message from all of them.
+        function selectHandler() {
+          var selection = chart.getSelection();
+          var message = '';
+          for (var i = 0; i < selection.length; i++) {
+            var item = selection[i];
+            if (item.row != null && item.column != null) {
+              var str = data.getFormattedValue(item.row, item.column);              
+              message += '{row:' + item.row + ',column:' + item.column + '} = ' + str + '\n';
+            } else if (item.row != null) {
+              var str = data.getFormattedValue(item.row, 0);
+              message += '{row:' + item.row + ', column:none}; value (col 0) = ' + str + '\n';
+            } else if (item.column != null) {
+              var str = data.getFormattedValue(0, item.column);
+              message += '{row:none, column:' + item.column + '}; value (row 0) = ' + str + '\n';
+            }
+          }
+          if (message == '') {
+            message = 'nothing';
+          }
+          alert('You selected ' + message);
+          
+        }
+    */    
+
+      // Instantiate and draw our chart, passing in some options.
+      var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+      function selectHandler() {
+        var selectedItem = chart.getSelection()[0];
+        var name = "";
+        if (selectedItem) {
+          name = data.getValue(selectedItem.row, 0);
+          punto_base = selectedItem.row-1;
+          //message += '{row:' + item.row + ',column:' + item.column + '}';
+          pto =data.getFormattedValue(selectedItem.row, selectedItem.column);
+          if (confirm("Really remove the " + name + " data point?" + " valor del pto : " +pto + " pto sig: " +punto_base)) {
+            //verifica si el pto donde se hizo click esta sobre el 0 o sobre la curva para borrar correctamente
+            //ya que la linea de minimo esta compuesta por dos rows una sobre la curva y otra sobre el eje =0
+            if (pto > 0) {
+              data.removeRow(selectedItem.row);
+              data.removeRow(selectedItem.row-1);
+              chart.draw(data);
+            }else{
+              data.removeRow(selectedItem.row);
+              data.removeRow(selectedItem.row);
+              
+              chart.draw(data);
+            }
+          }
+        }
+      }
+
+      google.visualization.events.addListener(chart, 'select', selectHandler);    
+      chart.draw(data, options);
+      //}
+
+
+
+      }
+
+    </script>
+  </head>
+  <body>
+    <input type="button" onclick="trabaja_min()" value="Click me">
+    <!--<div id="chart_div" style="width: 900px; height: 500px;"></div>-->
+    <div id="curve_chart" style="width: 900px; height: 500px"></div>
+  </body>
+  <!--Reference : https://developers.google.com/chart/interactive/docs/quick_start-->
+</html>

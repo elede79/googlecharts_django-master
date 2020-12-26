@@ -1,0 +1,231 @@
+<html>
+  <head>
+    <h1>Densitograma</h1>
+    <label id="my-sliderlLabel">Value 0 to 200</label><br /><br />
+    <input id="inputSliderVal" value="100" placeholder="1000" class="components-input">
+    <br /><br />
+
+    <div class="my-slider-wrapper">
+      <button class="sliderButton minus">-</button>
+      <div class="slider-inner-wrapper">
+        <input id="my-slider" type="text" />
+      </div>
+      <button class="sliderButton plus">+</button>
+    </div>
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+      <div id="gauge_div" style="width:280px; height: 140px;"></div>
+    <input type="button" value="Go Faster" onclick="changeTemp(1)" />
+    <input type="button" value="Slow down" onclick="changeTemp(-1)" />
+
+
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+      var chart;
+      var data;
+      var xseleccionado, yseleccionado, filaseleccionada, columnaseleccionada, punto_base_en_x;
+      var pto_siguiente_y;
+      
+      // Load the Visualization API and the corechart package.
+      google.charts.load('current', {'packages':['corechart']});
+      
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.charts.setOnLoadCallback(drawChart);
+
+      // Callback that creates and populates a data table,
+      // instantiates the pie chart, passes in the data and
+      // draws it.
+      
+
+      function drawChart() {
+        
+        data = new google.visualization.DataTable();
+        
+        data.addColumn('number', 'Y');
+        data.addColumn('number', 'X');
+        data.addColumn('number', 'min1');
+        data.addColumn('number', 'min2');
+        data.addColumn('number', 'min3');
+        data.addColumn('number', 'min4');
+
+        datos_graf =  {{values|safe}};
+        console.log('datos iniciales')
+        console.log(datos_graf);
+        
+        for (let i = 1; i < datos_graf.length; i++) {
+            console.log(`Numero: ${i}`);
+            console.log('Entrada: '+datos_graf[i]); //no patea
+            dato_graf_lin=datos_graf[i]
+            //data.addRows([dato_graf_lin]); //estoy metiendo datos con -1
+            for (let j = 0; j < 6; j++) {
+              console.log('ciclo interno: '+dato_graf_lin[j]);
+              
+              if (dato_graf_lin[j] == -1){
+                dato_graf_lin[j] = null
+              }
+            }
+            data.addRows([dato_graf_lin]);
+            console.log('salida: ' + dato_graf_lin);
+          
+        }
+        //agregados de minimos
+        //obtengo los minimos recibidos
+        datos_graf_minimos =  {{values_min|safe}};
+        console.log('datos_graf_minimos');
+        console.log(datos_graf_minimos);
+       
+        
+        for (let i = 1; i < datos_graf_minimos.length; i++) {
+            console.log(`Numero: ${i}`);
+            console.log('Entrada: '+datos_graf_minimos[i]); //no patea
+            datos_graf_minimos_lin=datos_graf_minimos[i]
+            //data.addRows([dato_graf_lin]); //estoy metiendo datos con -1
+            for (let j = 0; j < 6; j++) {
+              console.log('ciclo interno: '+datos_graf_minimos[j]);
+              
+              if (datos_graf_minimos_lin[j] == -1){
+                datos_graf_minimos_lin[j] = null
+              }
+            }
+            //data.addRows([datos_graf_minimos_lin]);
+            console.log('salida: ' + datos_graf_minimos_lin);
+        }
+
+        console.log('datos_graf_minimos Salida');
+        console.log(datos_graf_minimos);
+        //agrego cada minimo
+        valor_x=datos_graf_minimos[1][0]
+        console.log(valor_x)
+        data.addRows([[valor_x, null, 0, null, null, null], datos_graf_minimos[1]])
+        //data.addRows([[3, null, 0, null, null, null], [3, null, 17, null, null, null]])
+
+        valor_x=datos_graf_minimos[2][0]
+        console.log(valor_x)
+        data.addRows([[valor_x, null, null, 0, null, null], datos_graf_minimos[2]])
+        
+        valor_x=datos_graf_minimos[3][0]
+        console.log(valor_x)
+        data.addRows([[valor_x, null, null, null, 0,  null], datos_graf_minimos[3]])
+
+        valor_x=datos_graf_minimos[4][0]
+        console.log(valor_x)
+        data.addRows([[valor_x, null, null, null, null,0],  datos_graf_minimos[4]])
+        
+        
+        
+        var options = {
+            title: 'Densitograma paciente x1',
+            curveType: 'function',
+            legend: { position: 'bottom' }
+          };
+
+        chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+        chart.draw(data, options);
+
+       
+
+        function selectHandler() {
+          var selectedItem = chart.getSelection()[0];
+          var name = "";
+          var nameint= 0;
+          var pto_anterior_y, pto_posterior_y;
+          if (selectedItem)  {
+            name = data.getValue(selectedItem.row, 0);
+            //name2 = data.getFormattedValue(selectedItem.row, 5); //anda devuelve el valor de la coumna 5 q es min 4
+            name2 = data.getColumnLabel(selectedItem.column);
+            punto_base = selectedItem.row;
+
+            pto =data.getFormattedValue(selectedItem.row, selectedItem.column);
+            //obtengo el valor de y en el punto anterior y porsterior de la curva
+            nameint = parseInt(name, 10);
+            pto_anterior_y = data.getValue(nameint-2, 1); //no se por que pero asi funciona
+            pto_posterior_y = data.getValue(nameint, 1); //no se por que pero asi funciona
+            xseleccionado = name;
+            yseleccionado = pto; //del valor siguiente o anterior segun corresponda
+            filaseleccionada = punto_base;
+
+            if (pto > 0) {
+              punto_base_en_x = punto_base-1;
+              pto_siguiente_y = pto_posterior_y;
+            }else{
+              punto_base_en_x = punto_base+1;
+              pto_siguiente_y = pto_anterior_y;
+              }
+
+            columnaseleccionada = selectedItem.column;
+            if (confirm("Really remove the X=" + name + ", Y= "+ pto + " data point?" + " Fila: " +punto_base+ " linea nombre: "+name2 +" Columna :"+columnaseleccionada +" ant y pos en y :"+pto_anterior_y +" "+pto_posterior_y )) {
+              //verifica si el pto donde se hizo click esta sobre el 0 o sobre la curva para borrar correctamente
+              //ya que la linea de minimo esta compuesta por dos rows una sobre la curva y otra sobre el eje =0
+              if (pto > 0) {
+                data.removeRow(selectedItem.row);
+                data.removeRow(selectedItem.row-1);        
+                chart.draw(data);
+              }else{
+                data.removeRow(selectedItem.row);
+                data.removeRow(selectedItem.row);
+                chart.draw(data);
+              }
+            }
+          } // fin if (selectedItem) 
+        } //fin function selectHandler()
+
+        google.visualization.events.addListener(chart, 'select', selectHandler);    
+        chart.draw(data, options);
+      
+      };//function drawChart() 
+
+      //funcion para mover los minimos
+      function changeTemp(dir) {
+        var name='';
+
+        console.log('x: ',xseleccionado);
+        console.log('y: ',yseleccionado);
+        console.log('fila: ',filaseleccionada);
+        console.log('columna: ',columnaseleccionada);
+        console.log('siguiente: ',punto_base_en_x);
+        
+        //camnio valor en x
+        data.setValue(filaseleccionada, 0, data.getValue(filaseleccionada, 0) + dir * 1);
+        data.setValue(punto_base_en_x, 0, data.getValue(punto_base_en_x, 0) + dir * 1);
+
+        name = data.getValue(xseleccionado, 0); //ANTES xseleccionado+1
+        nameint = parseInt(name, 10);
+        console.log(' name : ',name);
+        pto_posterior_y = data.getValue(nameint-1, 1); //no se por que pero asi funciona
+
+        //console.log(' pto_posterior_y : ',pto_posterior_y);
+        //console.log(' pto_siguiente_y : ',pto_siguiente_y);
+        //cambio valor en y
+        //LA FILA QUE TENGO QUE USAR (LA DE LA GRAFICA) ES EL VALOR EN X-1
+        if (dir > 0) {
+          data.setValue(filaseleccionada, columnaseleccionada, pto_posterior_y);
+          xseleccionado= xseleccionado+1;
+        }else{
+          xseleccionado= xseleccionado-1;
+          pto_anterior_y = data.getValue(parseInt(xseleccionado,10)-1, 1); //le resto 1 mas porque la serie arranca en pto 0
+          console.log(' pto_anterior_y : ',pto_anterior_y, 'xseleccionado: ', xseleccionado);
+          data.setValue(filaseleccionada, columnaseleccionada, pto_anterior_y);
+          }
+        console.log(' xseleccionado : ',xseleccionado);
+   
+        var options = {
+            title: 'Densitograma paciente x1',
+            curveType: 'function',
+            legend: { position: 'bottom' }
+          };
+
+        chart.draw(data, options);
+      } // fin function changeTemp(dir) 
+
+    </script>
+  </head>
+  <body>
+    <input type="button" onclick="trabaja_min()" value="Click me">
+    <!--<div id="chart_div" style="width: 900px; height: 500px;"></div>-->
+    <div id="curve_chart" style="width: 900px; height: 500px"></div>
+  </body>
+  <!--Reference : https://developers.google.com/chart/interactive/docs/quick_start-->
+</html>
